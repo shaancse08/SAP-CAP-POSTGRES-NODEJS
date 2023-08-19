@@ -6,3 +6,4 @@ For Node.js, before we use the CAP-community-provided adapter cds-pg in combinat
 
 - ### [Prepare CAP Project](./MDFiles/PrepareCAPProject.md)
 - ### [Connect to PostgreSQL Locally](./MDFiles/ConnectToPostgreSQLLocally.md)
+- ### [Deployment](./MDFiles/Deployment.md)
