@@ -1,10 +1,15 @@
----
 _schema-version: "3.1"
 ID: sap-cap-nodejs-postgres
 version: 1.0.0
 description: "A simple CAP project."
 parameters:
   enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx cds build
+        - ./pg-build.sh
 
 modules:
   - name: sap-cap-nodejs-postgres-srv
@@ -35,9 +40,27 @@ modules:
           disk-quota: 1GB
           memory: 256MB
     build-parameters:
-      ignore: ["node_modules/"]
+      ignore:
+        - "node_modules/"
     requires:
       - name: sap-sample-postgres-db
+      - name: sap-cap-nodejs-postgres-auth
+
+  - name: sap-cap-nodejs-postgres
+    type: approuter.nodejs
+    path: app/ # from cds.env.folders. Consider also cds.env.build.target -> gen/app
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: sap-cap-nodejs-postgres-auth
 
 resources:
   - name: sap-sample-postgres-db
@@ -45,3 +68,10 @@ resources:
     parameters:
       service: postgresql-db
       service-plan: trial
+  - name: sap-cap-nodejs-postgres-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+
